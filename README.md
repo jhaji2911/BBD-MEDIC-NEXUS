@@ -1,7 +1,7 @@
 # 
-# OLLAMA API Wrapper
+# BBD NEXUS APIs
 
-This is a simple fastify wrapper of the ollama API.
+This is a simple fastify wrapper of the NEXUS API.
 
 ## Table of Contents
 
@@ -11,25 +11,7 @@ This is a simple fastify wrapper of the ollama API.
 
 ## About <a name = "about"></a>
 
-This project is just wrapper, which calls the underlying  `ollama api` for getting data from existing models running in your local or hosted machines.
-
- You need to install and run ollama api before using this wrapper. 
-
- ## Usage <a name = "usage"></a>
-
-Steps to install `ollama`
-
-1. First download ollama from [here](https://ollama.com/download)
-2. once you have downloaded ollama, then proceed with downloading models and running them.
-3. In our case we have two models running : 
-                a. `ollama run mistral:7b-instruct`
-                b. `ollama run deepseek-coder:6.7b`
-
- Well, this is it for the ollama part.
-
-
-
-
+This project is just wrapper, which calls the underlying  `SSN and IRS` for getting data from existing data  sources. 
 
 ## Getting Started <a name = "getting_started"></a>
 
