@@ -1,16 +1,35 @@
 import { FastifyInstance } from "fastify";
 import { $ref } from "./user.schema";
-import { createUser, getUsers, login, logout } from "./user.controller";
+import {
+  addUserAddress,
+  createUser,
+  getUserAddress,
+  getUsers,
+  login,
+  logout,
+} from "./user.controller";
 // import { ZodTypeProvider } from "fastify-type-provider-zod"
 
 export async function userRoutes(app: FastifyInstance) {
   // to get all users
   app.get(
     "/all",
-    {
-      preHandler: [app.authenticate],
-    },
+    // {
+    //   preHandler: [app.authenticate],
+    // },
     getUsers
+  );
+
+  app.get("/get-address/:id", getUserAddress);
+
+  app.post(
+    "/add-address/:id",
+    {
+      schema: {
+        body: $ref("userAddressSchema"),
+      },
+    },
+    addUserAddress
   );
   app.post(
     "/register",

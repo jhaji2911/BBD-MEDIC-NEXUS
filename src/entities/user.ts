@@ -7,6 +7,20 @@ import { BaseEntity } from './common';
 
 @Entity({ tableName : "user"})
 export class User extends BaseEntity {
+
+  @Property({ nullable: true})
+  suffix?: string | null;
+
+
+  @Property()
+  email: string;
+
+  @Property({nullable: true})
+  image?: string | null;
+
+  @Property({nullable: true})
+  phone?: string | null;
+
   @Property()
   @IsNotEmpty()
   firstName!: string;
@@ -15,12 +29,13 @@ export class User extends BaseEntity {
   @IsNotEmpty()
   lastName!: string;
 
-  // @ManyToOne(() => RolesMaster, {nullable: true}) we will reference this in future
   @Property({
-    nullable: true,
-    default: 'HR'
+    unique: true
   })
-  role!: string;
+  SSN!: string;
+
+  @Property({ type: 'date'})
+  dateOfBirth!: string;
 
 
   constructor(data: Omit<User, keyof BaseEntity>) {

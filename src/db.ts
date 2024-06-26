@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // eslint-disable-next-line prettier/prettier
 import { MikroORM, EntityManager, EntityRepository } from '@mikro-orm/postgresql';
-import { User, Auth, QuestionnaireMaster, RolesMaster, Session,  } from './entities';
+import { User, Auth, QuestionnaireMaster, RolesMaster, Session, Demographics,  } from './entities';
 import config from './mikro-orm.config';
 
 export interface Services {
@@ -10,6 +10,7 @@ export interface Services {
   users: EntityRepository<User>;
   auth: EntityRepository<Auth>;
   session: EntityRepository<Session>;
+  demographics: EntityRepository<Demographics>
   m_questionnaire: EntityRepository<QuestionnaireMaster>;
   m_roles: EntityRepository<RolesMaster>;
 
@@ -48,6 +49,7 @@ export default async function initORM(): Promise<Services> {
     users: orm.em.getRepository(User),
     auth: orm.em.getRepository(Auth),
     session: orm.em.getRepository(Session),
+    demographics: orm.em.getRepository(Demographics),
     m_questionnaire: orm.em.getRepository(QuestionnaireMaster),
     m_roles: orm.em.getRepository(RolesMaster)
   };

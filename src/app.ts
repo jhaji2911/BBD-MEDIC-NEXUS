@@ -22,10 +22,6 @@ import fastifyMultipart from "@fastify/multipart";
 
 
 
-// cron runs every 5 mins
-// for five minutes: "0/5 * * * *" 
-
-
 
 export interface AppOptions
   extends FastifyServerOptions,
@@ -92,8 +88,8 @@ const app: FastifyPluginAsync<AppOptions> = async (
   };
 
   await fastify.register(import("@fastify/rate-limit"), {
-    max: 100,
-    timeWindow: "1 minute",
+    max: 1000,
+    timeWindow: "10 minute",
   });
   // Register Swagger and Swagger UI
   fastify.register(fastifySwagger, swaggerOptions);
@@ -101,7 +97,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
 
   // Serve Swagger UI static files
   fastify.register(fastifyStatic, {
-    root: join(__dirname, "public"),
+    root: join(__dirname, "../../public"),
     prefix: "/public/",
   });
 

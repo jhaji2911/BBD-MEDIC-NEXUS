@@ -6,7 +6,6 @@ import { BaseEntity } from "./common";
 @Entity({ tableName : 'session'})
 export class Session extends BaseEntity {
   @ManyToOne(() => User, {nullable: true, 
-    // mapToPk: true,
     deleteRule: 'cascade'})
   user?: string | null = null;
 

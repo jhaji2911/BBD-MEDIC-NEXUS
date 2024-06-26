@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS BBD</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    #generate-users {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .ssn {
+        min-width: 6rem;
+    }
+
+    #generate-users:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      max-width: 1000px;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    .user-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+    }
+
+    #search {
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      max-width: 400px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .show-address-button {
+      padding: 8px 12px;
+      font-size: 14px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Generate Dummy Users</h1>
+  <div id="controls">
+    <input type="text" id="search" placeholder="Search name and email">
+    <button id="generate-users">Generate</button>
+  </div>
+  <table id="user-table">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>SSN</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Date of Birth</th>
+        <th>Action</th> <!-- New column for action buttons -->
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script type="module">
+    import { faker } from 'https://esm.sh/@faker-js/faker';
+    import { RandomSSN } from "https://esm.sh/ssn@1.0.3";
+    import Swal from "https://esm.sh/sweetalert2"
+
+    const addUsers = async (user) => {
+      const operation = await fetch("http://localhost:3000/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          suffix: user.suffix,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          image: user.image,
+          password: user.password,
+          phone: user.phone,
+          email: user.email,
+          SSN: user.SSN,
+          dateOfBirth: user.dob,
+        }),
+      });
+      const { id } = await operation.json();
+
+      const addUserAddress = await fetch(`http://localhost:3000/api/users/add-address/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          homeAddress: user.address,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zip,
+          country: user.country,
+        }),
+      });
+
+      console.log(await addUserAddress.json());
+    };
+
+    const loadUsers = async () => {
+      const existingUsers = await fetch("http://localhost:3000/api/users/all");
+      const users = await existingUsers.json();
+      const userTableBody = document.querySelector('#user-table tbody');
+      userTableBody.innerHTML = ''; // Clear existing users
+
+      users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="${user.image}" alt="User Image" class="user-image"></td>
+          <td>${user.suffix ?? "-"} ${user.firstName} ${user.lastName}</td>
+          <td class="ssn">${user.SSN}</td>
+          <td>${user.email}</td>
+          <td>${user.phone}</td>
+          <td>${user.dateOfBirth}</td>
+          <td><button class="show-address-button" data-user-id="${user.id}">Show Address</button></td>
+        `;
+        userTableBody.appendChild(row);
+      });
+
+      return users;
+    };
+
+    const filterUsers = (users, query) => {
+      const filteredUsers = users.filter(user => {
+        return (
+          user.firstName.toLowerCase().includes(query.toLowerCase()) ||
+          user.lastName.toLowerCase().includes(query.toLowerCase()) ||
+          user.email.toLowerCase().includes(query.toLowerCase())
+        );
+      });
+
+      const userTableBody = document.querySelector('#user-table tbody');
+      userTableBody.innerHTML = '';
+
+      filteredUsers.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><img src="${user.image}" alt="User Image" class="user-image"></td>
+          <td>${user.suffix ?? "-"} ${user.firstName} ${user.lastName}</td>
+          <td class="ssn">${user.SSN}</td>
+          <td>${user.email}</td>
+          <td>${user.phone}</td>
+          <td>${user.dateOfBirth}</td>
+          <td><button class="show-address-button" data-user-id="${user.id}">Show Address</button></td>
+        `;
+        userTableBody.appendChild(row);
+      });
+    };
+
+    let allUsers = await loadUsers();
+
+    document.getElementById('generate-users').addEventListener('click', async () => {
+      for (let i = 0; i < 10; i++) {
+        const user = {
+          suffix: faker.person.suffix(),
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
+          password: faker.internet.password(),
+          image: faker.image.avatar(),
+          phone: faker.phone.number(),
+          email: faker.internet.email(),
+          SSN: new RandomSSN('FL').value().toFormattedString(),
+          dob: faker.date.birthdate({ min: 18, max: 65, mode: 'age' }),
+          address: faker.location.streetAddress(),
+          city: faker.location.city(),
+          state: faker.location.state(),
+          zip: faker.location.zipCode(),
+          country: faker.location.country()
+        };
+        await addUsers(user);
+      }
+
+      allUsers = await loadUsers();
+    });
+
+    document.getElementById('search').addEventListener('input', (event) => {
+      const query = event.target.value;
+      filterUsers(allUsers, query);
+    });
+
+    document.querySelector('#user-table').addEventListener('click', async (event) => {
+      if (event.target.classList.contains('show-address-button')) {
+        const userId = event.target.getAttribute('data-user-id');
+        const user = await fetch(`http://localhost:3000/api/users/get-address/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+
+
+        const response = await user.json();
+
+        if (response) {
+          Swal.fire(`${response.address.homeAddress}, ${response.address.city}, ${response.address.state} ${response.address.zipCode}`);
+        } else {
+          Swal.fire({
+            title: 'user not found or encountered some error',
+            icon: 'error'
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>
