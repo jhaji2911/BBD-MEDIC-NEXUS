@@ -24,12 +24,13 @@ if (
 }
 
 export default defineConfig({
+  // Remember to add .env file every time
   driver: PostgreSqlDriver,
-  dbName: process.env.DB_NAME || 'postgres', // replace with your database name
-  user: process.env.DB_USER || 'nishantjha', // replace with your database user
-  password: process.env.DB_PASSWORD || 'ninja@123', // replace with your database password
-  host: process.env.DB_HOST || 'localhost', // replace with your database host
-  port: 5432, // replace with your database port
+  dbName: process.env.DB_NAME, // replace with your database name
+  user: process.env.DB_USER, // replace with your database user
+  password: process.env.DB_PASSWORD, // replace with your database password
+  host: process.env.DB_HOST, // replace with your database host
+  port: process.env.DB_PORT as unknown as number, // replace with your database port
   // folder based discovery setup, using common filename suffix
   entities,
   entitiesTs: ['src/**/*.entity.ts'],
