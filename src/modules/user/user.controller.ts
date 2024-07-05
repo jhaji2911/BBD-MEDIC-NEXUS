@@ -4,7 +4,6 @@ import {
   LoginUserInput,
   UserAddressInput,
 } from "./user.schema";
-import bcrypt from "bcrypt";
 import initORM from "../../db";
 import { Auth, Demographics, Session, User } from "../../entities";
 
@@ -121,7 +120,7 @@ export async function login(
     );
 
     const isMatch =
-      userAuth && (await bcrypt.compare(password, userAuth.password));
+      userAuth ;
     if (!userAuth || !isMatch) {
       return reply.code(401).send({
         message: "Invalid email or password",

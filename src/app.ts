@@ -11,7 +11,6 @@ import fastifySwagger from "@fastify/swagger";
 import fastifyStatic from "@fastify/static";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import fastifyCors from "@fastify/cors";
-// import { AsyncTask, CronJob, ToadScheduler } from "toad-scheduler";
 import initORM from "./db";
 import { userSchemas } from "./modules/user/user.schema";
 import fjwt, { FastifyJWT } from "@fastify/jwt";
