@@ -120,7 +120,7 @@
     import Swal from "https://esm.sh/sweetalert2"
 
     const addUsers = async (user) => {
-      const operation = await fetch("http://localhost:3000/api/users/register", {
+      const operation = await fetch("http://0.0.0.0:3000/api/users/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,7 +139,7 @@
       });
       const { id } = await operation.json();
 
-      const addUserAddress = await fetch(`http://localhost:3000/api/users/add-address/${id}`, {
+      const addUserAddress = await fetch(`http://0.0.0.0:3000/api/users/add-address/${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -157,7 +157,7 @@
     };
 
     const loadUsers = async () => {
-      const existingUsers = await fetch("http://localhost:3000/api/users/all");
+      const existingUsers = await fetch("http://0.0.0.0:3000/api/users/all");
       const users = await existingUsers.json();
       const userTableBody = document.querySelector('#user-table tbody');
       userTableBody.innerHTML = ''; // Clear existing users
@@ -240,7 +240,7 @@
     document.querySelector('#user-table').addEventListener('click', async (event) => {
       if (event.target.classList.contains('show-address-button')) {
         const userId = event.target.getAttribute('data-user-id');
-        const user = await fetch(`http://localhost:3000/api/users/get-address/${userId}`, {
+        const user = await fetch(`http://0.0.0.0:3000/api/users/get-address/${userId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

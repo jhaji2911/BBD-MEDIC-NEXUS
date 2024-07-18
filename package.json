@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "npm run build:ts && tsc -p test/tsconfig.json && c8 node --test -r ts-node/register test/**/*.ts",
-    "start": "npm run build:ts && fastify start -l info dist/src/app.js",
+    "start:build": "npm run build:ts && fastify start -l info dist/src/app.js",
+    "start": "fastify start -l  info dist/src/app.js -c \"config.json\"",
     "build:ts": "tsc",
     "rimraf": "rimraf dist && mkdir dist && rimraf node_modules ",
     "watch:ts": "tsc -w",
@@ -65,5 +66,8 @@
     "rimraf": "^5.0.5",
     "ts-node": "^10.4.0",
     "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": "18.20.4"
   }
 }
