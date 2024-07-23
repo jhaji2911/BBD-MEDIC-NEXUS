@@ -8,6 +8,10 @@ const createUserSchema = z.object({
   image: z.string().url("add valid url"),
   password: z.string().min(6),
   phone: z.string(),
+  familyMember: z.object({
+    memberId: z.string(),
+    relation: z.string(),
+  }).optional(),
   firstName: z.string(),
   lastName: z.string(),
   SSN: z.string().regex(/^\d{3}-\d{2}-\d{4}$/),

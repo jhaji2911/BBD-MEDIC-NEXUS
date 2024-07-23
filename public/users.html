@@ -1,97 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="./user-styles.css">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NEXUS BBD</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      height: 100vh;
-      margin: 0;
-      background-color: #f0f0f0;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-    }
-
-    #controls {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    #generate-users {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      margin-right: 10px;
-    }
-
-    .ssn {
-        min-width: 6rem;
-    }
-
-    #generate-users:hover {
-      background-color: #0056b3;
-    }
-
-    table {
-      width: 100%;
-      max-width: 1000px;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: white;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f0f0f0;
-    }
-
-    .user-image {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-    }
-
-    #search {
-      padding: 10px;
-      font-size: 16px;
-      width: 100%;
-      max-width: 400px;
-      margin-right: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    .show-address-button {
-      padding: 8px 12px;
-      font-size: 14px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  </style>
 </head>
 <body>
   <h1>Generate Dummy Users</h1>
@@ -108,16 +21,29 @@
         <th>Email</th>
         <th>Phone</th>
         <th>Date of Birth</th>
-        <th>Action</th> <!-- New column for action buttons -->
+        <th>Actions</th> <!-- Updated to plural for multiple actions -->
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
+  <!-- Modal for selecting family members -->
+  <div id="family-members-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Select Family Members</h2>
+      <div id="family-members-list"></div>
+      <button id="save-family-members">Save</button>
+    </div>
+  </div>
+
   <script type="module">
     import { faker } from 'https://esm.sh/@faker-js/faker';
     import { RandomSSN } from "https://esm.sh/ssn@1.0.3";
     import Swal from "https://esm.sh/sweetalert2"
+
+    let allUsers = [];
+    let currentSelectedUser = null;
 
     const addUsers = async (user) => {
       const operation = await fetch("http://0.0.0.0:3000/api/users/register", {
@@ -153,7 +79,34 @@
         }),
       });
 
-      console.log(await addUserAddress.json());
+      await addUserAddress.json();
+
+      if (user.familyMembers.length > 0) {
+        await addFamilyMembers(id, user.familyMembers);
+      }
+    };
+
+    const relations = ['son', 'daughter', 'wife', 'husband', 'mother', 'father'];
+
+
+    const addFamilyMembers = async (userId, familyMembers) => {
+      for (const memberId of familyMembers) {
+        await fetch(`http://0.0.0.0:3000/api/users/add-family-member/${userId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ memberId, relation:relations[Math.floor(Math.random() * relations.length)]  }),
+        });
+
+        await fetch(`http://0.0.0.0:3000/api/users/add-family-member/${memberId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ memberId: userId, relation: relations[Math.floor(Math.random() * relations.length)] }),
+        });
+      }
     };
 
     const loadUsers = async () => {
@@ -171,7 +124,10 @@
           <td>${user.email}</td>
           <td>${user.phone}</td>
           <td>${user.dateOfBirth}</td>
-          <td><button class="show-address-button" data-user-id="${user.id}">Show Address</button></td>
+          <td>
+            <button class="show-address-button" data-user-id="${user.id}">Show Address</button>
+            <button class="view-add-members-button" data-user-id="${user.id}">View/Add Members</button>
+          </td>
         `;
         userTableBody.appendChild(row);
       });
@@ -200,13 +156,58 @@
           <td>${user.email}</td>
           <td>${user.phone}</td>
           <td>${user.dateOfBirth}</td>
-          <td><button class="show-address-button" data-user-id="${user.id}">Show Address</button></td>
+          <td>
+            <button class="show-address-button" data-user-id="${user.id}">Show Address</button>
+            <button class="view-add-members-button" data-user-id="${user.id}">View/Add Members</button>
+          </td>
         `;
         userTableBody.appendChild(row);
       });
     };
 
-    let allUsers = await loadUsers();
+    const showModal = (userId) => {
+      const modal = document.getElementById('family-members-modal');
+      const closeBtn = document.querySelector('.close');
+      const saveBtn = document.getElementById('save-family-members');
+      const listContainer = document.getElementById('family-members-list');
+
+      currentSelectedUser = userId;
+      listContainer.innerHTML = '';
+
+      allUsers.forEach(user => {
+        if (user.id !== userId) {
+          const userCheckbox = document.createElement('input');
+          userCheckbox.type = 'checkbox';
+          userCheckbox.className = 'user-checkbox';
+          userCheckbox.value = user.id;
+
+          const userLabel = document.createElement('label');
+          userLabel.textContent = `${user.firstName} ${user.lastName} (${user.email})`;
+
+          listContainer.appendChild(userCheckbox);
+          listContainer.appendChild(userLabel);
+          listContainer.appendChild(document.createElement('br'));
+        }
+      });
+
+      modal.style.display = 'flex';
+
+      closeBtn.onclick = () => {
+        modal.style.display = 'none';
+      };
+
+      saveBtn.onclick = async () => {
+        const selectedFamilyMembers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+        await addFamilyMembers(currentSelectedUser, selectedFamilyMembers);
+        modal.style.display = 'none';
+      };
+
+      window.onclick = (event) => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      };
+    };
 
     document.getElementById('generate-users').addEventListener('click', async () => {
       for (let i = 0; i < 10; i++) {
@@ -224,8 +225,10 @@
           city: faker.location.city(),
           state: faker.location.state(),
           zip: faker.location.zipCode(),
-          country: faker.location.country()
+          country: faker.location.country(),
+          familyMembers: [] // Empty initially, will be added via modal
         };
+
         await addUsers(user);
       }
 
@@ -245,8 +248,7 @@
           headers: {
             "Content-Type": "application/json",
           },
-        })
-
+        });
 
         const response = await user.json();
 
@@ -259,7 +261,14 @@
           });
         }
       }
+
+      if (event.target.classList.contains('view-add-members-button')) {
+        const userId = event.target.getAttribute('data-user-id');
+        showModal(userId);
+      }
     });
+
+    allUsers = await loadUsers();
   </script>
 </body>
 </html>

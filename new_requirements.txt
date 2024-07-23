@@ -1,0 +1,19 @@
+API/GetFamilyMembers   --- Should return list of all the family members
+Change-  Add a  new columns called FMembers in the tabe, which will be array of objects: [{
+    memberId: 232423hdas,
+    relation: 'Son'/'Daughter'
+}]
+INPUT: SSN, LastName and Zip Code
+OUTPUT - List of FirstName, LastName, SSN,DOB
+API/GetPersonalDetails   -  get all the personal details
+INPUT: SSN, LastName and Zip Code
+OUTPUT -   FirstName, MiddleName, LastName, Address, City, State, Zip and Phone
+API/GetDemogaphicdetails
+API/GetIncome   -  get all the Income  details
+API/GetAsset
+
+1. For the first item we have to add a new column in the users table called SSN_LastName_ZipCode and store the concatenation of SSN, LastName and Zip Code. This will be used for faster lookups.
+2. We can use an index on this column.
+3. For each API call we would just need to lookup in the users table using SSN_LastName_ZipCode as key.
+4. The result of the lookup would give us the userId which we could then use to get other details from respective tables.
+5. This way, even if there are millions of records, it will be very fast because we have an index on SSN_LastName_ZipCode.
